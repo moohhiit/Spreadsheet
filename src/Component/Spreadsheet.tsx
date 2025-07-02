@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -6,7 +6,7 @@ import {
   createColumnHelper,
 } from "@tanstack/react-table";
 import {
-  ChevronDown,
+
   Filter,
   Download,
   Upload,
@@ -16,7 +16,7 @@ import {
   Search,
   Eye,
   GalleryHorizontalEnd,
-  MoreHorizontal,
+
   ArrowUpDown,
   Bell,
 } from "lucide-react";
@@ -83,8 +83,8 @@ const getPriorityClass = (priority: string) => {
   return p === "high"
     ? "text-red-500"
     : p === "medium"
-    ? "text-orange-400"
-    : p === "low"
+      ? "text-orange-400"
+      : p === "low"
         ? "text-blue-500"
         : "bg-gray-100";
 };
@@ -103,6 +103,7 @@ const Spreadsheet = () => {
     "Priority",
     "Due Date",
     "Est. Value",
+ 
   ]);
 
   const columnHelper = createColumnHelper<SpreadsheetCell>();
@@ -127,13 +128,14 @@ const Spreadsheet = () => {
         cell: (info) => <div className="text-center text-gray-500">{info.getValue()}</div>,
       }),
       ...columnKeys.map((col) =>
-        columnHelper.accessor(col, {
+        columnHelper.accessor((row) => row[col], {
+          id: col,
           header: col,
           cell: (info) => {
             const value = info.getValue() as string;
             const row = info.row.index;
             const colId = info.column.id;
-            const isEdit = editing?.row === row && editing.col === colId;
+            const isEdit = editing?.row === row && editing.col === colId
 
             if (isEdit) {
               return (
@@ -195,6 +197,8 @@ const Spreadsheet = () => {
 
       setSelected({ row, col });
     };
+
+
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
   }, [selected, editing, data, columnKeys]);
