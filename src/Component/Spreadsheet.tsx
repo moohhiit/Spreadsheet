@@ -4,6 +4,7 @@ import {
   getCoreRowModel,
   flexRender,
   createColumnHelper,
+  getFilteredRowModel
 } from "@tanstack/react-table";
 import {
 
@@ -11,12 +12,11 @@ import {
   Download,
   Upload,
   Share2,
-  Plus,
   ChevronRight,
   Search,
   Eye,
   GalleryHorizontalEnd,
-
+  Plus,
   ArrowUpDown,
   Bell,
 } from "lucide-react";
@@ -91,6 +91,7 @@ const getPriorityClass = (priority: string) => {
 
 const Spreadsheet = () => {
   const [data, setData] = useState(createInitialData());
+  const [globalFilter, setGlobalFilter] = useState("");
   const [selected, setSelected] = useState<{ row: number; col: string } | null>(null);
   const [editing, setEditing] = useState<{ row: number; col: string } | null>(null);
   const [columnKeys, setColumnKeys] = useState([
@@ -103,7 +104,7 @@ const Spreadsheet = () => {
     "Priority",
     "Due Date",
     "Est. Value",
- 
+
   ]);
 
   const columnHelper = createColumnHelper<SpreadsheetCell>();
@@ -131,6 +132,7 @@ const Spreadsheet = () => {
         columnHelper.accessor((row) => row[col], {
           id: col,
           header: col,
+          enableGlobalFilter: true,
           cell: (info) => {
             const value = info.getValue() as string;
             const row = info.row.index;
@@ -166,10 +168,9 @@ const Spreadsheet = () => {
         header: () => (
           <button
             onClick={addColumn}
-            className="text-blue-600 underline text-sm"
+            className="w-20"
           >
-            + Column
-          </button>
+            <Plus />         </button>
         ),
         cell: () => null,
       }),
@@ -179,8 +180,18 @@ const Spreadsheet = () => {
   const table = useReactTable({
     data,
     columns,
-    getCoreRowModel: getCoreRowModel()
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      globalFilter,
+    },
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn: (row, columnId, filterValue) => {
+      const value = row.getValue(columnId);
+      return String(value).toLowerCase().includes(String(filterValue).toLowerCase());
+    },
   });
+
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -236,9 +247,9 @@ const Spreadsheet = () => {
                 type="text"
                 placeholder="Search within sheet"
                 className="pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                // value={globalFilter}
+                value={globalFilter}
                 onChange={(e) => {
-                  // setGlobalFilter(e.target.value);
+                  setGlobalFilter(e.target.value);
                   console.log(`Search: ${e.target.value}`);
                 }}
               />
@@ -363,6 +374,7 @@ const Spreadsheet = () => {
           ))}
         </tbody>
       </table>
+      <div className="mt-4 text-sm text-green-600 text-right">Status: Online</div>
     </div>
   );
 };
